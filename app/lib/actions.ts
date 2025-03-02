@@ -30,12 +30,19 @@ export async function createInvoice(formData: FormData) {
   console.log({ customerId, amount, status });
   console.log(Object.fromEntries(formData.entries()));
 
-  await sql`
+  try {
+    await sql`
     INSERT INTO invoices (customer_id, amount, status, date)
     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
   `;
+  } catch (error) {
+    // Wee'll log the error to the console for now
+    console.error(error);
+  }
 
   revalidatePath('/dashboard/invoices');
+  // redirect MUST be called outside of the try block
+  // because it works by throwing an error
   redirect('/dashboard/invoices');
 }
 
@@ -48,17 +55,30 @@ export async function updateInvoice(id: string, formData: FormData) {
 
   const amountInCents = amount * 100;
 
-  await sql`
+  try {
+    await sql`
     UPDATE invoices
     SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
     WHERE id = ${id}
   `;
+  } catch (error) {
+    // Wee'll log the error to the console for now
+    console.error(error);
+  }
 
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 }
 
 export async function deleteInvoice(id: string) {
-  await sql`DELETE FROM invoices WHERE id = ${id}`;
+  // dummy error for testing
+  // throw new Error('Failed to Delete Invoice');
+
+  try {
+    await sql`DELETE FROM invoices WHERE id = ${id}`;
+  } catch (error) {
+    // Wee'll log the error to the console for now
+    console.error(error);
+  }
   revalidatePath('/dashboard/invoices');
 }
